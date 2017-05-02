@@ -6,7 +6,7 @@ android {
     defaultConfig {
         applicationId "site.hanschen.pretty"
         minSdkVersion 15
-        targetSdkVersion 25
+        targetSdkVersion 21
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
@@ -34,4 +34,6 @@ dependencies {
 
     compile 'com.jakewharton:butterknife:8.5.1'
     annotationProcessor 'com.jakewharton:butterknife-compiler:8.5.1'
+
+    compile 'com.squareup.okhttp3:okhttp:3.7.0'
 }
