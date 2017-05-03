@@ -10,11 +10,13 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 
 import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import site.hanschen.pretty.utils.CommonUtils;
 
 /**
  * @author HansChen
@@ -48,12 +50,14 @@ public class PictureAdapter extends RecyclerView.Adapter<PictureAdapter.ViewHold
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
         Glide.with(mContext)
-             .load(mPictures.get(position))
+             .load(CommonUtils.getSmallPicture(mPictures.get(position)))
              .centerCrop()
              .placeholder(new ColorDrawable(Color.GRAY))
              .crossFade()
+             .diskCacheStrategy(DiskCacheStrategy.ALL)
              .into(holder.picture);
     }
+
 
     @Override
     public int getItemCount() {

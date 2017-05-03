@@ -2,6 +2,7 @@ package site.hanschen.pretty;
 
 import android.graphics.Rect;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
@@ -24,6 +25,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Function;
 import io.reactivex.schedulers.Schedulers;
+import site.hanschen.pretty.gallery.GalleryActivity;
 import site.hanschen.pretty.zhihu.ZhihuApi;
 import site.hanschen.pretty.zhihu.bean.AnswerList;
 
@@ -38,7 +40,7 @@ public class MainActivity extends AppCompatActivity {
     private int photoSize;
 
     private PictureAdapter mAdapter;
-    private List<String> mPictures = new ArrayList<>();
+    private ArrayList<String> mPictures = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,6 +49,13 @@ public class MainActivity extends AppCompatActivity {
         ButterKnife.bind(MainActivity.this);
         initViews();
         initData();
+
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                GalleryActivity.startup(MainActivity.this, mPictures, 1);
+            }
+        }, 5000);
     }
 
     private int getPhotoSize(int column) {
