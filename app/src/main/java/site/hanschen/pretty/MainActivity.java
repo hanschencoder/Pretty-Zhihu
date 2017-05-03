@@ -1,11 +1,16 @@
 package site.hanschen.pretty;
 
+import android.graphics.Rect;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.View;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import butterknife.BindView;
@@ -27,6 +32,14 @@ public class MainActivity extends AppCompatActivity {
     @BindView(R.id.main_toolbar)
     Toolbar mToolbar;
 
+    @BindView(R.id.main_pictures)
+    RecyclerView mPictureView;
+
+    private int photoSize;
+
+    private PictureAdapter mAdapter;
+    private List<String> mPictures = new ArrayList<>();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -36,9 +49,31 @@ public class MainActivity extends AppCompatActivity {
         initData();
     }
 
+    private int getPhotoSize(int column) {
+        int margin = getResources().getDimensionPixelOffset(R.dimen.grid_margin);
+        return getResources().getDisplayMetrics().widthPixels / column - 2 * margin;
+    }
+
+
+    private void initViews() {
+        mToolbar.setTitle(R.string.app_name);
+        setSupportActionBar(mToolbar);
+
+        mPictureView.setLayoutManager(new GridLayoutManager(this, 3));
+        mPictureView.addItemDecoration(new RecyclerView.ItemDecoration() {
+            @Override
+            public void getItemOffsets(Rect outRect, View view, RecyclerView parent, RecyclerView.State state) {
+                int margin = getResources().getDimensionPixelOffset(R.dimen.grid_margin);
+                outRect.set(margin, margin, margin, margin);
+            }
+        });
+        mAdapter = new PictureAdapter(this, mPictures, getPhotoSize(3));
+        mPictureView.setAdapter(mAdapter);
+    }
+
     private void initData() {
         final ZhihuApi api = new ZhihuApi();
-        final int questionId = 58565859;
+        final int questionId = 37787176;
         Observable.create(new ObservableOnSubscribe<String>() {
             @Override
             public void subscribe(@NonNull ObservableEmitter<String> emitter) throws Exception {
@@ -53,6 +88,7 @@ public class MainActivity extends AppCompatActivity {
                     public void subscribe(@NonNull ObservableEmitter<Integer> emitter) throws Exception {
                         int pageSize = 10;
                         int count = api.getAnswerCount(html);
+                        Log.d("Hans", "answer count: " + count);
                         for (int offset = 0; offset < count; offset += pageSize) {
                             emitter.onNext(offset);
                         }
@@ -104,7 +140,7 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onNext(@NonNull String picture) {
-                Log.d("Hans", picture);
+                mAdapter.addPicture(picture);
             }
 
             @Override
@@ -117,11 +153,6 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
-    }
-
-    private void initViews() {
-        mToolbar.setTitle(R.string.app_name);
-        setSupportActionBar(mToolbar);
     }
 
 }
