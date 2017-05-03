@@ -11,8 +11,6 @@ import okhttp3.Response;
 
 public class HttpClient {
 
-    private static final String TAG = HttpClient.class.getSimpleName();
-
     private static final long DEFAULT_CONNECT_TIMEOUT  = 5;
     private static final long DEFAULT_RESPONSE_TIMEOUT = 10;
 
@@ -29,30 +27,19 @@ public class HttpClient {
         mClient = builder.build();
     }
 
-
     public String httpGet(String url) throws IOException {
-        try {
-            Request request = new Request.Builder().url(url).build();
-            Response response = mClient.newCall(request).execute();
-            return response.body().string();
-        } catch (IOException e) {
-            e.printStackTrace();
-            throw e;
-        }
+        Request request = new Request.Builder().url(url).build();
+        Response response = mClient.newCall(request).execute();
+        return response.body().string();
     }
 
     public String httpPost(String url, Map<String, String> header, RequestBody body) throws IOException {
-        try {
-            Request.Builder builder = new Request.Builder().url(url).post(body);
-            for (Map.Entry<String, String> entry : header.entrySet()) {
-                builder.addHeader(entry.getKey(), entry.getValue());
-            }
-            Request request = builder.build();
-            Response response = mClient.newCall(request).execute();
-            return response.body().string();
-        } catch (IOException e) {
-            e.printStackTrace();
-            throw e;
+        Request.Builder builder = new Request.Builder().url(url).post(body);
+        for (Map.Entry<String, String> entry : header.entrySet()) {
+            builder.addHeader(entry.getKey(), entry.getValue());
         }
+        Request request = builder.build();
+        Response response = mClient.newCall(request).execute();
+        return response.body().string();
     }
 }
