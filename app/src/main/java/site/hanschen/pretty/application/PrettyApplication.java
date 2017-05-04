@@ -4,12 +4,12 @@ import android.app.Application;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 
-import org.greenrobot.greendao.async.AsyncSession;
-
 import site.hanschen.pretty.db.gen.DaoMaster;
 import site.hanschen.pretty.db.gen.DaoSession;
 import site.hanschen.pretty.db.repository.PrettyRepository;
 import site.hanschen.pretty.db.repository.PrettyRepositoryImpl;
+import site.hanschen.pretty.zhihu.ZhiHuApi;
+import site.hanschen.pretty.zhihu.ZhiHuApiApiImpl;
 
 /**
  * @author HansChen
@@ -23,6 +23,7 @@ public class PrettyApplication extends Application {
     }
 
     private PrettyRepository mPrettyRepository;
+    private ZhiHuApi         mZhiHuApi;
 
     @Override
     protected void attachBaseContext(Context base) {
@@ -47,5 +48,16 @@ public class PrettyApplication extends Application {
             }
         }
         return mPrettyRepository;
+    }
+
+    public ZhiHuApi getApi() {
+        if (mZhiHuApi == null) {
+            synchronized (this) {
+                if (mZhiHuApi == null) {
+                    mZhiHuApi = new ZhiHuApiApiImpl();
+                }
+            }
+        }
+        return mZhiHuApi;
     }
 }

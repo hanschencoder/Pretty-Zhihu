@@ -3,7 +3,7 @@ package site.hanschen.pretty.ui.home;
 /**
  * @author HansChen
  */
-public enum QuestionCategory {
+enum QuestionCategory {
 
     HISTORY,
     FAVORITES,

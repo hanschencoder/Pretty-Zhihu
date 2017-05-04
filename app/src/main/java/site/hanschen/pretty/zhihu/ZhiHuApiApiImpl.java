@@ -9,6 +9,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import okhttp3.FormBody;
+import site.hanschen.pretty.base.HttpClient;
 import site.hanschen.pretty.utils.JsonUtils;
 import site.hanschen.pretty.zhihu.bean.AnswerList;
 import site.hanschen.pretty.zhihu.bean.RequestAnswerParams;
@@ -16,16 +17,38 @@ import site.hanschen.pretty.zhihu.bean.RequestAnswerParams;
 /**
  * @author HansChen
  */
-public class ZhihuApi {
+public class ZhiHuApiApiImpl implements ZhiHuApi {
 
     private HttpClient httpClient = new HttpClient();
 
-    public String getHtml(int questionId) throws IOException {
-        String url = "https://www.zhihu.com/question/" + questionId;
-        return httpClient.httpGet(url);
+    @Override
+    public boolean isUrlValid(String url) {
+        String regex = "https://www\\.zhihu\\.com/question/\\d+";
+        Pattern p = Pattern.compile(regex);
+        Matcher matcher = p.matcher(url);
+        return matcher.matches();
     }
 
-    public int getAnswerCount(String html) {
+    @Override
+    public int parseQuestionId(String url) {
+        int index = url.lastIndexOf('/');
+        return Integer.parseInt(url.substring(index + 1));
+    }
+
+    @Override
+    public String parseQuestionTitle(String html) {
+        String regex = "<h1 class=\"QuestionHeader-title\">([\\S ]+)</h1>";
+        Pattern p = Pattern.compile(regex);
+        Matcher matcher = p.matcher(html);
+        if (matcher.find()) {
+            return matcher.group(1);
+        }
+
+        return "unknown";
+    }
+
+    @Override
+    public int parseAnswerCount(String html) {
         String regex = "<h4 class=\"List-headerText\"><span>(\\d+) 个回答</span></h4>";
         Pattern p = Pattern.compile(regex);
         Matcher matcher = p.matcher(html);
@@ -37,29 +60,8 @@ public class ZhihuApi {
         return 0;
     }
 
-    public String getQuestionTitle(String html) {
-        String regex = "<h1 class=\"QuestionHeader-title\">(\\S+)</h1>";
-        Pattern p = Pattern.compile(regex);
-        Matcher matcher = p.matcher(html);
-        if (matcher.find()) {
-            return matcher.group(1);
-        }
-
-        return "unknown";
-    }
-
-    public AnswerList getAnswerList(int questionId, int pageSize, int offset) throws IOException {
-
-        RequestAnswerParams params = new RequestAnswerParams(questionId, pageSize, offset);
-        FormBody body = new FormBody.Builder().add("method", "next").add("params", JsonUtils.toJson(params)).build();
-        Map<String, String> header = new HashMap<>();
-        header.put("Content-Type", "application/x-www-form-urlencoded");
-
-        String answer = httpClient.httpPost("https://www.zhihu.com/node/QuestionAnswerListV2", header, body);
-        return JsonUtils.fromJsonObject(answer, AnswerList.class);
-    }
-
-    public List<String> getPictureList(String answer) {
+    @Override
+    public List<String> parsePictureList(String answer) {
         List<String> pictures = new ArrayList<>();
         String regex = "data-actualsrc=\"(https://pic[0-9]+\\.zhimg\\.com/[0-9a-zA-Z\\-]+_b\\.(jpg|png))\"";
         Pattern p = Pattern.compile(regex);
@@ -68,5 +70,21 @@ public class ZhihuApi {
             pictures.add(matcher.group(1));
         }
         return pictures;
+    }
+
+    @Override
+    public String getHtml(int questionId) throws IOException {
+        return httpClient.httpGet("https://www.zhihu.com/question/" + questionId);
+    }
+
+    @Override
+    public AnswerList getAnswerList(int questionId, int pageSize, int offset) throws IOException {
+        RequestAnswerParams params = new RequestAnswerParams(questionId, pageSize, offset);
+        FormBody body = new FormBody.Builder().add("method", "next").add("params", JsonUtils.toJson(params)).build();
+        Map<String, String> header = new HashMap<>();
+        header.put("Content-Type", "application/x-www-form-urlencoded");
+
+        String answer = httpClient.httpPost("https://www.zhihu.com/node/QuestionAnswerListV2", header, body);
+        return JsonUtils.fromJsonObject(answer, AnswerList.class);
     }
 }

@@ -1,4 +1,4 @@
-package site.hanschen.pretty;
+package site.hanschen.pretty.config;
 
 import android.content.Context;
 

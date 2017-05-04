@@ -1,4 +1,4 @@
-package site.hanschen.pretty.zhihu;
+package site.hanschen.pretty.base;
 
 import java.io.IOException;
 import java.util.Map;

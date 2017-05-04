@@ -58,7 +58,7 @@ public class QuestionListAdapter extends RecyclerView.Adapter<QuestionListAdapte
     public void onBindViewHolder(ViewHolder holder, int position) {
         holder.itemView.setTag(position);
 
-        Question question = mQuestions.get(0);
+        Question question = mQuestions.get(position);
         String firstChar = question.getTitle().substring(0, 1);
         int color = mGenerator.getColor(question.getTitle());
         TextDrawable drawable = mBuilder.build(firstChar, color);
@@ -66,7 +66,7 @@ public class QuestionListAdapter extends RecyclerView.Adapter<QuestionListAdapte
 
         holder.title.setText(question.getTitle());
         holder.detail.setText(String.format(Locale.getDefault(),
-                                            "%d个回答, %d张照片",
+                                            "%d个回答, 已抓取%d张照片",
                                             question.getAnswerCount(),
                                             question.getPictures().size()));
     }

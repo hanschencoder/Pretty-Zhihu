@@ -22,7 +22,7 @@
         <activity android:name=".ui.home.QuestionActivity">
 
             <meta-data
-                android:name="site.hanschen.pretty.PrettyGlideModule"
+                android:name="site.hanschen.pretty.config.PrettyGlideModule"
                 android:value="GlideModule"/>
 
             <intent-filter>

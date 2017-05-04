@@ -6,4 +6,5 @@
 
     <color name="ripple_color">#62B2B2B2</color>
     <color name="transparent">#00000000</color>
+    <color name="error">#ea482d</color>
 </resources>

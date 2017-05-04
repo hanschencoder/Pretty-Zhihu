@@ -33,9 +33,9 @@ dependencies {
     })
     testCompile 'junit:junit:4.12'
 
-    compile 'com.android.support:design:25.2.0'
-    compile 'com.android.support:recyclerview-v7:25.2.0'
-    compile 'com.android.support:support-v13:25.2.0'
+    compile 'com.android.support:design:25.0.1'
+    compile 'com.android.support:recyclerview-v7:25.0.1'
+    compile 'com.android.support:support-v13:25.0.1'
 
     compile 'site.hanschen:common:1.0.9'
 
@@ -50,6 +50,6 @@ dependencies {
     compile 'com.github.chrisbanes:PhotoView:2.0.0'
     compile 'com.pnikosis:materialish-progress:1.7'
     compile 'com.amulyakhare:com.amulyakhare.textdrawable:1.0.1'
-
+    compile 'org.greenrobot:eventbus:3.0.0'
     compile 'org.greenrobot:greendao:3.2.2'
 }
