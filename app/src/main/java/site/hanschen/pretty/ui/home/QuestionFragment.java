@@ -38,7 +38,7 @@ public class QuestionFragment extends Fragment {
         return fragment;
     }
 
-    @BindView(R.id.device_list_devices)
+    @BindView(R.id.question_list)
     RecyclerView mRecyclerView;
 
     private QuestionListAdapter mAdapter;
