@@ -1,4 +1,7 @@
 # Pretty-Zhihu
+
+[![Build Status](https://travis-ci.org/shensky711/Pretty-Zhihu.svg?branch=master)](https://travis-ci.org/shensky711/Pretty-Zhihu)
+
 知乎上的看图神器，你懂的。
 
 抓取知乎某一话题下所有回答者的照片，方便各位看（美女）图。
