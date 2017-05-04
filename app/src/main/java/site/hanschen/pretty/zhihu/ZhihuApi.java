@@ -1,7 +1,5 @@
 package site.hanschen.pretty.zhihu;
 
-import android.util.Log;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -39,9 +37,19 @@ public class ZhihuApi {
         return 0;
     }
 
+    public String getQuestionTitle(String html) {
+        String regex = "<h1 class=\"QuestionHeader-title\">(\\S+)</h1>";
+        Pattern p = Pattern.compile(regex);
+        Matcher matcher = p.matcher(html);
+        if (matcher.find()) {
+            return matcher.group(1);
+        }
+
+        return "unknown";
+    }
+
     public AnswerList getAnswerList(int questionId, int pageSize, int offset) throws IOException {
 
-        Log.d("Hans", String.format("requestId:%d, pageSize:%d, offset:%d", questionId, pageSize, offset));
         RequestAnswerParams params = new RequestAnswerParams(questionId, pageSize, offset);
         FormBody body = new FormBody.Builder().add("method", "next").add("params", JsonUtils.toJson(params)).build();
         Map<String, String> header = new HashMap<>();

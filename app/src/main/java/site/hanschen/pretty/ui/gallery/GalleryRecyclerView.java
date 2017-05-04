@@ -1,4 +1,4 @@
-package site.hanschen.pretty.gallery;
+package site.hanschen.pretty.ui.gallery;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;

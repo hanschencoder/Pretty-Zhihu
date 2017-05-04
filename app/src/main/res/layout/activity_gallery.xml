@@ -15,7 +15,7 @@
             android:layout_height="0dp"
             android:layout_weight="1"/>
 
-        <site.hanschen.pretty.gallery.GalleryRecyclerView
+        <site.hanschen.pretty.ui.gallery.GalleryRecyclerView
             android:id="@+id/gallery_horizontal_list"
             android:layout_width="match_parent"
             android:layout_height="96dp"/>

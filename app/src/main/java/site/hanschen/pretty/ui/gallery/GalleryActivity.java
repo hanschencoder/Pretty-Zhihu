@@ -1,4 +1,4 @@
-package site.hanschen.pretty.gallery;
+package site.hanschen.pretty.ui.gallery;
 
 import android.content.Context;
 import android.content.Intent;
@@ -16,8 +16,8 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import site.hanschen.pretty.R;
-import site.hanschen.pretty.gallery.adapter.GalleryAdapter;
-import site.hanschen.pretty.gallery.adapter.GalleryPagerAdapter;
+import site.hanschen.pretty.ui.gallery.adapter.GalleryAdapter;
+import site.hanschen.pretty.ui.gallery.adapter.GalleryPagerAdapter;
 import site.hanschen.pretty.widget.DepthPageTransformer;
 import site.hanschen.pretty.widget.ViewPagerCatchException;
 

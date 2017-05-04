@@ -1,4 +1,4 @@
-package site.hanschen.pretty;
+package site.hanschen.pretty.ui;
 
 import android.content.Context;
 import android.graphics.Color;
@@ -16,6 +16,7 @@ import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import site.hanschen.pretty.R;
 import site.hanschen.pretty.utils.CommonUtils;
 
 /**

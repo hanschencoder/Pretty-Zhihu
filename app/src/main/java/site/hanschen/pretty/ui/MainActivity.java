@@ -1,14 +1,13 @@
-package site.hanschen.pretty;
+package site.hanschen.pretty.ui;
 
+import android.content.Intent;
 import android.graphics.Rect;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.View;
 
 import java.util.ArrayList;
@@ -25,7 +24,11 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Function;
 import io.reactivex.schedulers.Schedulers;
-import site.hanschen.pretty.gallery.GalleryActivity;
+import site.hanschen.pretty.R;
+import site.hanschen.pretty.application.PrettyApplication;
+import site.hanschen.pretty.db.bean.Question;
+import site.hanschen.pretty.db.repository.PrettyRepository;
+import site.hanschen.pretty.ui.home.QuestionActivity;
 import site.hanschen.pretty.zhihu.ZhihuApi;
 import site.hanschen.pretty.zhihu.bean.AnswerList;
 
@@ -41,21 +44,18 @@ public class MainActivity extends AppCompatActivity {
 
     private PictureAdapter mAdapter;
     private ArrayList<String> mPictures = new ArrayList<>();
+    private PrettyRepository mPrettyRepository;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(MainActivity.this);
+        mPrettyRepository = PrettyApplication.getInstance().getPrettyRepository();
         initViews();
         initData();
 
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                GalleryActivity.startup(MainActivity.this, mPictures, 1);
-            }
-        }, 5000);
+        startActivity(new Intent(this, QuestionActivity.class));
     }
 
     private int getPhotoSize(int column) {
@@ -97,7 +97,8 @@ public class MainActivity extends AppCompatActivity {
                     public void subscribe(@NonNull ObservableEmitter<Integer> emitter) throws Exception {
                         int pageSize = 10;
                         int count = api.getAnswerCount(html);
-                        Log.d("Hans", "answer count: " + count);
+                        Question question = new Question(null, questionId, api.getQuestionTitle(html), count);
+                        mPrettyRepository.insertOrReplace(question);
                         for (int offset = 0; offset < count; offset += pageSize) {
                             emitter.onNext(offset);
                         }

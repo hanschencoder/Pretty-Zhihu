@@ -1,4 +1,4 @@
-package site.hanschen.pretty.gallery.adapter;
+package site.hanschen.pretty.ui.gallery.adapter;
 
 import android.content.Context;
 import android.graphics.Color;
