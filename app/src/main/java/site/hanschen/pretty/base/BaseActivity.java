@@ -6,6 +6,8 @@ import android.support.v7.app.AppCompatActivity;
 
 import com.afollestad.materialdialogs.MaterialDialog;
 
+import org.greenrobot.eventbus.EventBus;
+
 /**
  * @author HansChen
  */
@@ -16,6 +18,13 @@ public class BaseActivity extends AppCompatActivity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        EventBus.getDefault().register(this);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        EventBus.getDefault().unregister(this);
     }
 
     protected void showWaitingDialog(String title, String message) {

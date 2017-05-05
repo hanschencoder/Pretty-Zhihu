@@ -1,14 +1,17 @@
 package site.hanschen.pretty.ui.home;
 
 
-import android.app.Fragment;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.InputType;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
@@ -20,7 +23,10 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -37,13 +43,15 @@ import site.hanschen.pretty.R;
 import site.hanschen.pretty.application.PrettyApplication;
 import site.hanschen.pretty.db.bean.Question;
 import site.hanschen.pretty.db.repository.PrettyRepository;
+import site.hanschen.pretty.eventbus.EditModeChangedEvent;
 import site.hanschen.pretty.eventbus.NewQuestionEvent;
+import site.hanschen.pretty.widget.FragmentBackHandler;
 import site.hanschen.pretty.zhihu.ZhiHuApi;
 
 /**
  * @author HansChen
  */
-public class QuestionFragment extends Fragment {
+public class QuestionFragment extends Fragment implements FragmentBackHandler {
 
     private static String KEY_CATEGORY = "KEY_CATEGORY";
 
@@ -63,9 +71,11 @@ public class QuestionFragment extends Fragment {
     private List<Question>      mQuestion;
     private MaterialDialog      mWaitingDialog;
 
-    private ZhiHuApi         mApi;
-    private PrettyRepository mPrettyRepository;
+    private   ZhiHuApi         mApi;
+    private   PrettyRepository mPrettyRepository;
+    protected Set<Integer>     mSelections;
 
+    private Menu mMenu;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -80,6 +90,7 @@ public class QuestionFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
+        setHasOptionsMenu(true);
         return inflater.inflate(R.layout.fragment_question_list, container, false);
     }
 
@@ -89,6 +100,7 @@ public class QuestionFragment extends Fragment {
         ButterKnife.bind(this, view);
         mPrettyRepository = PrettyApplication.getInstance().getPrettyRepository();
         mApi = PrettyApplication.getInstance().getApi();
+        mSelections = new HashSet<>();
         initViews();
         initData();
     }
@@ -97,6 +109,40 @@ public class QuestionFragment extends Fragment {
     public void onDestroy() {
         super.onDestroy();
         EventBus.getDefault().unregister(this);
+    }
+
+    @Override
+    public boolean onBackPressed() {
+        if (mAdapter.isEditMode()) {
+            exitEditMode();
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        inflater.inflate(R.menu.menu_question_fragment, menu);
+        mMenu = menu;
+        mMenu.findItem(R.id.select_all).setVisible(false);
+        mMenu.findItem(R.id.un_select_all).setVisible(false);
+        mMenu.findItem(R.id.delete).setVisible(false);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.select_all:
+                selectAll();
+                break;
+            case R.id.un_select_all:
+                clearAll();
+                break;
+            case R.id.delete:
+                showDeleteDialog();
+                break;
+        }
+        return true;
     }
 
     private void initData() {
@@ -111,41 +157,100 @@ public class QuestionFragment extends Fragment {
     private void initViews() {
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
         mAdapter = new QuestionListAdapter(getActivity());
-        mAdapter.setOnItemClickListener(mOnItemClickListener);
+        mAdapter.setItemClickListener(mOnItemClickListener);
         mRecyclerView.setAdapter(mAdapter);
     }
 
     private QuestionListAdapter.OnItemClickListener mOnItemClickListener = new QuestionListAdapter.OnItemClickListener() {
         @Override
         public void onItemClick(final Question question) {
-            new MaterialDialog.Builder(getActivity()).title("打开话题")
-                                                     .content(String.format("抓取该话题下所有图片？请尽量使用Wi-Fi，土豪随意",
-                                                                            question.getTitle()))
-                                                     .positiveText("抓取")
-                                                     .onPositive(new MaterialDialog.SingleButtonCallback() {
-                                                         @Override
-                                                         public void onClick(@NonNull MaterialDialog dialog,
-                                                                             @NonNull DialogAction which) {
-                                                         }
-                                                     })
-                                                     .negativeText("取消")
-                                                     .onNegative(new MaterialDialog.SingleButtonCallback() {
-                                                         @Override
-                                                         public void onClick(@NonNull MaterialDialog dialog,
-                                                                             @NonNull DialogAction which) {
-                                                             dialog.dismiss();
-                                                         }
-                                                     })
-                                                     .build()
-                                                     .show();
+            if (mAdapter.isEditMode()) {
+                if (mSelections.contains(question.hashCode())) {
+                    unSelectQuestion(question);
+                } else {
+                    selectQuestion(question);
+                }
+                mAdapter.notifyDataSetChanged();
+            } else {
+                showOpenQuestionDialog(question);
+            }
+        }
+
+        @Override
+        public void onItemLongClick(Question question) {
+            if (!mAdapter.isEditMode()) {
+                selectQuestion(question);
+                enterEditMode(mSelections);
+            }
         }
     };
+
+    private void selectQuestion(Question question) {
+        mSelections.add(question.hashCode());
+        mAdapter.notifyDataSetChanged();
+    }
+
+    private void selectAll() {
+        for (Question q : mQuestion) {
+            mSelections.add(q.hashCode());
+        }
+        mAdapter.notifyDataSetChanged();
+    }
+
+    private void clearAll() {
+        mSelections.clear();
+        mAdapter.notifyDataSetChanged();
+    }
+
+    private void unSelectQuestion(Question question) {
+        mSelections.remove(question.hashCode());
+        mAdapter.notifyDataSetChanged();
+    }
+
+    private void enterEditMode(Set<Integer> selections) {
+        mAdapter.enterEditMode(selections);
+        mMenu.findItem(R.id.select_all).setVisible(true);
+        mMenu.findItem(R.id.un_select_all).setVisible(true);
+        mMenu.findItem(R.id.delete).setVisible(true);
+        EventBus.getDefault().post(new EditModeChangedEvent(true));
+    }
+
+    private void exitEditMode() {
+        clearAll();
+        mAdapter.exitEditMode();
+        mMenu.findItem(R.id.select_all).setVisible(false);
+        mMenu.findItem(R.id.un_select_all).setVisible(false);
+        mMenu.findItem(R.id.delete).setVisible(false);
+        EventBus.getDefault().post(new EditModeChangedEvent(false));
+    }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onMessageEvent(NewQuestionEvent event) {
         if (mCategory == QuestionCategory.HISTORY) {
             showNewQuestionDialog();
         }
+    }
+
+    private void showOpenQuestionDialog(Question question) {
+        new MaterialDialog.Builder(getActivity()).title("打开话题")
+                                                 .content(String.format("抓取该话题下所有图片？请尽量使用Wi-Fi，土豪随意", question.getTitle()))
+                                                 .positiveText("抓取")
+                                                 .onPositive(new MaterialDialog.SingleButtonCallback() {
+                                                     @Override
+                                                     public void onClick(@NonNull MaterialDialog dialog,
+                                                                         @NonNull DialogAction which) {
+                                                     }
+                                                 })
+                                                 .negativeText("取消")
+                                                 .onNegative(new MaterialDialog.SingleButtonCallback() {
+                                                     @Override
+                                                     public void onClick(@NonNull MaterialDialog dialog,
+                                                                         @NonNull DialogAction which) {
+                                                         dialog.dismiss();
+                                                     }
+                                                 })
+                                                 .build()
+                                                 .show();
     }
 
     private void showNewQuestionDialog() {
@@ -198,49 +303,76 @@ public class QuestionFragment extends Fragment {
                 emitter.onNext(mApi.getHtml(questionId));
                 emitter.onComplete();
             }
-        })
-                  .subscribeOn(Schedulers.io())
-                  .observeOn(Schedulers.io())
-                  .flatMap(new Function<String, ObservableSource<Question>>() {
-                      @Override
-                      public ObservableSource<Question> apply(final @NonNull String html) throws Exception {
-                          return Observable.create(new ObservableOnSubscribe<Question>() {
-                              @Override
-                              public void subscribe(@NonNull ObservableEmitter<Question> emitter) throws Exception {
-                                  int count = mApi.parseAnswerCount(html);
-                                  Question question = new Question(null, questionId, mApi.parseQuestionTitle(html), count);
-                                  mPrettyRepository.insertOrReplace(question);
-                                  emitter.onNext(question);
-                                  emitter.onComplete();
-                              }
-                          });
-                      }
-                  })
-                  .observeOn(AndroidSchedulers.mainThread())
-                  .subscribe(new Observer<Question>() {
-                      @Override
-                      public void onSubscribe(@NonNull Disposable d) {
-                          showWaitingDialog("请稍等", "正在获取话题...");
-                      }
+        }).subscribeOn(Schedulers.io()).observeOn(Schedulers.io()).flatMap(new Function<String, ObservableSource<Question>>() {
+            @Override
+            public ObservableSource<Question> apply(final @NonNull String html) throws Exception {
+                return Observable.create(new ObservableOnSubscribe<Question>() {
+                    @Override
+                    public void subscribe(@NonNull ObservableEmitter<Question> emitter) throws Exception {
+                        int count = mApi.parseAnswerCount(html);
+                        Question question = new Question(null, questionId, mApi.parseQuestionTitle(html), count);
+                        mPrettyRepository.insertOrReplace(question);
+                        emitter.onNext(question);
+                        emitter.onComplete();
+                    }
+                });
+            }
+        }).observeOn(AndroidSchedulers.mainThread()).subscribe(new Observer<Question>() {
+            @Override
+            public void onSubscribe(@NonNull Disposable d) {
+                showWaitingDialog("请稍等", "正在获取话题...");
+            }
 
-                      @Override
-                      public void onNext(@NonNull Question question) {
-                          dismissDialog();
-                          mQuestion.add(question);
-                          mAdapter.notifyDataSetChanged();
-                          Toast.makeText(getActivity().getApplicationContext(), "话题已添加", Toast.LENGTH_SHORT).show();
-                      }
+            @Override
+            public void onNext(@NonNull Question question) {
+                dismissDialog();
+                mQuestion.add(question);
+                mAdapter.notifyDataSetChanged();
+                Toast.makeText(getActivity().getApplicationContext(), "话题已添加", Toast.LENGTH_SHORT).show();
+            }
 
-                      @Override
-                      public void onError(@NonNull Throwable e) {
-                          dismissDialog();
-                      }
+            @Override
+            public void onError(@NonNull Throwable e) {
+                dismissDialog();
+            }
 
-                      @Override
-                      public void onComplete() {
+            @Override
+            public void onComplete() {
 
-                      }
-                  });
+            }
+        });
+    }
+
+    private void showDeleteDialog() {
+        new MaterialDialog.Builder(getActivity()).title("删除话题")
+                                                 .content("是否删除选中话题？")
+                                                 .positiveText("删除")
+                                                 .positiveColorRes(R.color.error)
+                                                 .onPositive(new MaterialDialog.SingleButtonCallback() {
+                                                     @Override
+                                                     public void onClick(@NonNull MaterialDialog dialog,
+                                                                         @NonNull DialogAction which) {
+                                                         Iterator<Question> iterator = mQuestion.iterator();
+                                                         while (iterator.hasNext()) {
+                                                             Question q = iterator.next();
+                                                             if (mSelections.contains(q.hashCode())) {
+                                                                 iterator.remove();
+                                                                 q.delete();
+                                                             }
+                                                         }
+                                                         mAdapter.notifyDataSetChanged();
+                                                     }
+                                                 })
+                                                 .negativeText("取消")
+                                                 .onNegative(new MaterialDialog.SingleButtonCallback() {
+                                                     @Override
+                                                     public void onClick(@NonNull MaterialDialog dialog,
+                                                                         @NonNull DialogAction which) {
+                                                         dialog.dismiss();
+                                                     }
+                                                 })
+                                                 .build()
+                                                 .show();
     }
 
     protected void showWaitingDialog(String title, String message) {

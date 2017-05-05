@@ -5,6 +5,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -13,6 +14,7 @@ import com.amulyakhare.textdrawable.util.ColorGenerator;
 
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -22,14 +24,16 @@ import site.hanschen.pretty.db.bean.Question;
 /**
  * @author HansChen
  */
-public class QuestionListAdapter extends RecyclerView.Adapter<QuestionListAdapter.ViewHolder> implements View.OnClickListener {
+public class QuestionListAdapter extends RecyclerView.Adapter<QuestionListAdapter.ViewHolder> implements View.OnClickListener, View.OnLongClickListener {
 
-    private List<Question>        mQuestions;
-    private Context               mContext;
-    private LayoutInflater        mInflater;
-    private OnItemClickListener   mOnItemClickListener;
-    private ColorGenerator        mGenerator;
-    private TextDrawable.IBuilder mBuilder;
+    private   List<Question>        mQuestions;
+    private   Context               mContext;
+    private   LayoutInflater        mInflater;
+    private   OnItemClickListener   mOnItemClickListener;
+    private   ColorGenerator        mGenerator;
+    private   TextDrawable.IBuilder mBuilder;
+    private   boolean               mEditMode;
+    protected Set<Integer>          mSelections;
 
     public QuestionListAdapter(Context context) {
         this.mContext = context;
@@ -43,14 +47,34 @@ public class QuestionListAdapter extends RecyclerView.Adapter<QuestionListAdapte
         notifyDataSetChanged();
     }
 
-    public void setOnItemClickListener(OnItemClickListener onItemClickListener) {
+    public void setItemClickListener(OnItemClickListener onItemClickListener) {
         this.mOnItemClickListener = onItemClickListener;
+    }
+
+    public void enterEditMode(Set<Integer> selections) {
+        mEditMode = true;
+        mSelections = selections;
+        notifyDataSetChanged();
+    }
+
+    public void exitEditMode() {
+        mEditMode = false;
+        if (mSelections != null) {
+            mSelections.clear();
+            mSelections = null;
+        }
+        notifyDataSetChanged();
+    }
+
+    public boolean isEditMode() {
+        return mEditMode;
     }
 
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View root = mInflater.inflate(R.layout.list_item_two_line_with_icon, parent, false);
+        View root = mInflater.inflate(R.layout.list_item_two_line_with_icon_and_check, parent, false);
         root.setOnClickListener(QuestionListAdapter.this);
+        root.setOnLongClickListener(QuestionListAdapter.this);
         return new ViewHolder(root);
     }
 
@@ -69,6 +93,17 @@ public class QuestionListAdapter extends RecyclerView.Adapter<QuestionListAdapte
                                             "%d个回答, 已抓取%d张照片",
                                             question.getAnswerCount(),
                                             question.getPictures().size()));
+
+        if (mEditMode) {
+            holder.checkBox.setVisibility(View.VISIBLE);
+            if (mSelections.contains(question.hashCode())) {
+                holder.checkBox.setChecked(true);
+            } else {
+                holder.checkBox.setChecked(false);
+            }
+        } else {
+            holder.checkBox.setVisibility(View.GONE);
+        }
     }
 
     @Override
@@ -84,9 +119,21 @@ public class QuestionListAdapter extends RecyclerView.Adapter<QuestionListAdapte
         }
     }
 
+    @Override
+    public boolean onLongClick(View v) {
+        if (mOnItemClickListener != null) {
+            Question question = mQuestions.get((Integer) v.getTag());
+            mOnItemClickListener.onItemLongClick(question);
+            return true;
+        }
+        return false;
+    }
+
     public interface OnItemClickListener {
 
         void onItemClick(Question question);
+
+        void onItemLongClick(Question question);
     }
 
     static class ViewHolder extends RecyclerView.ViewHolder {
@@ -97,6 +144,8 @@ public class QuestionListAdapter extends RecyclerView.Adapter<QuestionListAdapte
         TextView  title;
         @BindView(R.id.item_secondary_text)
         TextView  detail;
+        @BindView(R.id.item_check)
+        CheckBox  checkBox;
 
         ViewHolder(View itemView) {
             super(itemView);

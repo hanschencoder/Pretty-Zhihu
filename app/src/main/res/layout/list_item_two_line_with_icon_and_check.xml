@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                xmlns:tools="http://schemas.android.com/tools"
+                android:layout_width="match_parent"
+                android:layout_height="72dp"
+                android:background="@drawable/bg_ripple_rectangle">
+
+    <ImageView
+        android:id="@+id/item_icon"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_centerVertical="true"
+        android:layout_marginLeft="16dp"
+        android:layout_marginStart="16dp"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:layout_marginEnd="16dp"
+        android:layout_marginLeft="72dp"
+        android:layout_marginRight="16dp"
+        android:layout_marginStart="72dp"
+        android:orientation="horizontal"
+        tools:ignore="RtlSymmetry">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/item_primary_text"
+                style="@style/RobotoRegular"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:text="primary text"
+                android:textColor="@color/text_color_black_primary"
+                android:textSize="16sp"/>
+
+            <TextView
+                android:id="@+id/item_secondary_text"
+                style="@style/RobotoRegular"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="secondary text"
+                android:textColor="@color/text_color_black_secondary"
+                android:textSize="14sp"/>
+        </LinearLayout>
+
+        <CheckBox
+            android:id="@+id/item_check"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:clickable="false"/>
+    </LinearLayout>
+
+</RelativeLayout>

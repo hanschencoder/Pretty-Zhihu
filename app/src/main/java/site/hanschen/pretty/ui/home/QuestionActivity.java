@@ -6,8 +6,11 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.TabLayout;
 import android.support.v4.view.ViewPager;
 import android.support.v7.widget.Toolbar;
+import android.view.View;
 
 import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.Arrays;
 
@@ -16,7 +19,10 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 import site.hanschen.pretty.R;
 import site.hanschen.pretty.base.BaseActivity;
+import site.hanschen.pretty.eventbus.EditModeChangedEvent;
 import site.hanschen.pretty.eventbus.NewQuestionEvent;
+import site.hanschen.pretty.widget.BackHandlerHelper;
+import site.hanschen.pretty.widget.ScrollViewPager;
 
 /**
  * @author HansChen
@@ -26,7 +32,7 @@ public class QuestionActivity extends BaseActivity {
     @BindView(R.id.question_tab_layout)
     TabLayout            mTabLayout;
     @BindView(R.id.question_pager)
-    ViewPager            mViewPager;
+    ScrollViewPager      mViewPager;
     @BindView(R.id.question_add)
     FloatingActionButton mFabBtn;
 
@@ -46,7 +52,7 @@ public class QuestionActivity extends BaseActivity {
         mViewPager.setOffscreenPageLimit(2);
         QuestionCategory[] categories = new QuestionCategory[]{
                 QuestionCategory.HISTORY, QuestionCategory.FAVORITES, QuestionCategory.HOT};
-        mViewPager.setAdapter(new QuestionPagerAdapter(getFragmentManager(), Arrays.asList(categories)));
+        mViewPager.setAdapter(new QuestionPagerAdapter(getSupportFragmentManager(), Arrays.asList(categories)));
         mTabLayout.setupWithViewPager(mViewPager);
         mViewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
@@ -73,5 +79,25 @@ public class QuestionActivity extends BaseActivity {
     @OnClick(R.id.question_add)
     void onFabClick() {
         EventBus.getDefault().post(new NewQuestionEvent());
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (!BackHandlerHelper.handleBackPress(this)) {
+            super.onBackPressed();
+        }
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onMessageEvent(EditModeChangedEvent event) {
+        if (event.isEditMode) {
+            mFabBtn.hide();
+            mViewPager.setScrollable(false);
+            mTabLayout.setVisibility(View.GONE);
+        } else {
+            mFabBtn.show();
+            mViewPager.setScrollable(true);
+            mTabLayout.setVisibility(View.VISIBLE);
+        }
     }
 }

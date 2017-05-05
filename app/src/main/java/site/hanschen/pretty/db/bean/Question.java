@@ -37,6 +37,26 @@ public class Question {
             @JoinProperty(name = "questionId", referencedName = "questionId")})
     private List<Picture> pictures;
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        Question question = (Question) o;
+
+        return questionId == question.questionId;
+
+    }
+
+    @Override
+    public int hashCode() {
+        return questionId;
+    }
+
     /** Used to resolve relations */
     @Generated(hash = 2040040024)
     private transient DaoSession daoSession;
