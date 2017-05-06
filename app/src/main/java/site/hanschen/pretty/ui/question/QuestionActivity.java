@@ -1,4 +1,4 @@
-package site.hanschen.pretty.ui.home;
+package site.hanschen.pretty.ui.question;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -41,6 +41,7 @@ public class QuestionActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_question);
         ButterKnife.bind(this);
+        EventBus.getDefault().register(this);
         initViews();
     }
 

@@ -48,20 +48,33 @@ public class Question {
 
         Question question = (Question) o;
 
-        return questionId == question.questionId;
+        if (questionId != question.questionId) {
+            return false;
+        }
+        if (answerCount != question.answerCount) {
+            return false;
+        }
+        return title != null ? title.equals(question.title) : question.title == null;
 
     }
 
     @Override
     public int hashCode() {
-        return questionId;
+        int result = questionId;
+        result = 31 * result + (title != null ? title.hashCode() : 0);
+        result = 31 * result + answerCount;
+        return result;
     }
 
-    /** Used to resolve relations */
+    /**
+     * Used to resolve relations
+     */
     @Generated(hash = 2040040024)
     private transient DaoSession daoSession;
 
-    /** Used for active entity operations. */
+    /**
+     * Used for active entity operations.
+     */
     @Generated(hash = 891254763)
     private transient QuestionDao myDao;
 
@@ -113,8 +126,7 @@ public class Question {
                 throw new DaoException("Entity is detached from DAO context");
             }
             PictureDao targetDao = daoSession.getPictureDao();
-            List<Picture> picturesNew = targetDao
-                    ._queryQuestion_Pictures(questionId);
+            List<Picture> picturesNew = targetDao._queryQuestion_Pictures(questionId);
             synchronized (this) {
                 if (pictures == null) {
                     pictures = picturesNew;
@@ -124,7 +136,9 @@ public class Question {
         return pictures;
     }
 
-    /** Resets a to-many relationship, making the next get call to query for a fresh result. */
+    /**
+     * Resets a to-many relationship, making the next get call to query for a fresh result.
+     */
     @Generated(hash = 1035739203)
     public synchronized void resetPictures() {
         pictures = null;
@@ -166,7 +180,9 @@ public class Question {
         myDao.update(this);
     }
 
-    /** called by internal mechanisms, do not call yourself. */
+    /**
+     * called by internal mechanisms, do not call yourself.
+     */
     @Generated(hash = 754833738)
     public void __setDaoSession(DaoSession daoSession) {
         this.daoSession = daoSession;

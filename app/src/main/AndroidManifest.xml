@@ -19,7 +19,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/PrettyTheme">
-        <activity android:name=".ui.home.QuestionActivity">
+        <activity android:name=".ui.question.QuestionActivity">
 
             <meta-data
                 android:name="site.hanschen.pretty.config.PrettyGlideModule"
@@ -33,12 +33,14 @@
         </activity>
 
         <activity
-            android:name=".ui.gallery.GalleryActivity"
-            android:screenOrientation="portrait"/>
+            android:name=".ui.picture.GalleryActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/Fullscreen"/>
 
         <activity
-            android:name=".ui.MainActivity"
+            android:name=".ui.picture.PictureListActivity"
             android:screenOrientation="portrait"/>
+
     </application>
 
 </manifest>

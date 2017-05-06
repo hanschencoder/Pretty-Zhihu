@@ -9,7 +9,8 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_gravity="center"
-        android:adjustViewBounds="true"/>
+        android:adjustViewBounds="true"
+        android:scaleType="fitCenter"/>
 
     <com.pnikosis.materialishprogress.ProgressWheel
         android:id="@+id/gallery_pager_progress"

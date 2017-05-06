@@ -4,7 +4,6 @@ import org.greenrobot.greendao.annotation.Entity;
 import org.greenrobot.greendao.annotation.Generated;
 import org.greenrobot.greendao.annotation.Id;
 import org.greenrobot.greendao.annotation.NotNull;
-import org.greenrobot.greendao.annotation.Unique;
 
 /**
  * @author HansChen
@@ -18,7 +17,6 @@ public class Picture {
     private int questionId;
 
     @NotNull
-    @Unique
     private String url;
 
     @Generated(hash = 1760715477)
@@ -30,6 +28,31 @@ public class Picture {
 
     @Generated(hash = 1602548376)
     public Picture() {
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        Picture picture = (Picture) o;
+
+        if (questionId != picture.questionId) {
+            return false;
+        }
+        return url != null ? url.equals(picture.url) : picture.url == null;
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = questionId;
+        result = 31 * result + (url != null ? url.hashCode() : 0);
+        return result;
     }
 
     public Long getId() {

@@ -1,4 +1,4 @@
-package site.hanschen.pretty.ui.home;
+package site.hanschen.pretty.ui.question;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
@@ -10,7 +10,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.amulyakhare.textdrawable.TextDrawable;
-import com.amulyakhare.textdrawable.util.ColorGenerator;
 
 import java.util.List;
 import java.util.Locale;
@@ -20,6 +19,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import site.hanschen.pretty.R;
 import site.hanschen.pretty.db.bean.Question;
+import site.hanschen.pretty.utils.ColorUtils;
 
 /**
  * @author HansChen
@@ -30,7 +30,6 @@ public class QuestionListAdapter extends RecyclerView.Adapter<QuestionListAdapte
     private   Context               mContext;
     private   LayoutInflater        mInflater;
     private   OnItemClickListener   mOnItemClickListener;
-    private   ColorGenerator        mGenerator;
     private   TextDrawable.IBuilder mBuilder;
     private   boolean               mEditMode;
     protected Set<Integer>          mSelections;
@@ -38,7 +37,6 @@ public class QuestionListAdapter extends RecyclerView.Adapter<QuestionListAdapte
     public QuestionListAdapter(Context context) {
         this.mContext = context;
         this.mInflater = LayoutInflater.from(context);
-        mGenerator = ColorGenerator.MATERIAL;
         mBuilder = TextDrawable.builder().round();
     }
 
@@ -84,7 +82,7 @@ public class QuestionListAdapter extends RecyclerView.Adapter<QuestionListAdapte
 
         Question question = mQuestions.get(position);
         String firstChar = question.getTitle().substring(0, 1);
-        int color = mGenerator.getColor(question.getTitle());
+        int color = ColorUtils.getColor(question.getTitle());
         TextDrawable drawable = mBuilder.build(firstChar, color);
         holder.icon.setImageDrawable(drawable);
 

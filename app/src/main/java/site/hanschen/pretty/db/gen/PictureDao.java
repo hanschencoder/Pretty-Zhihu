@@ -48,7 +48,7 @@ public class PictureDao extends AbstractDao<Picture, Long> {
         db.execSQL("CREATE TABLE " + constraint + "\"PICTURE\" (" + //
                 "\"_id\" INTEGER PRIMARY KEY ," + // 0: id
                 "\"QUESTION_ID\" INTEGER NOT NULL ," + // 1: questionId
-                "\"URL\" TEXT NOT NULL UNIQUE );"); // 2: url
+                "\"URL\" TEXT NOT NULL );"); // 2: url
     }
 
     /** Drops the underlying database table. */

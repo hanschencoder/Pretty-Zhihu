@@ -1,8 +1,6 @@
-package site.hanschen.pretty.ui.gallery.adapter;
+package site.hanschen.pretty.ui.picture;
 
 import android.content.Context;
-import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
 import android.os.Parcelable;
 import android.support.v4.view.PagerAdapter;
 import android.view.LayoutInflater;
@@ -20,6 +18,7 @@ import com.pnikosis.materialishprogress.ProgressWheel;
 import java.util.List;
 
 import site.hanschen.pretty.R;
+import site.hanschen.pretty.db.bean.Picture;
 
 
 /**
@@ -27,7 +26,7 @@ import site.hanschen.pretty.R;
  */
 public class GalleryPagerAdapter extends PagerAdapter {
 
-    private List<String>   mData;
+    private List<Picture>  mData;
     private LayoutInflater mInflater;
     private Context        mContext;
 
@@ -36,7 +35,7 @@ public class GalleryPagerAdapter extends PagerAdapter {
         mInflater = LayoutInflater.from(context);
     }
 
-    public void setData(List<String> data) {
+    public void setData(List<Picture> data) {
         mData = data;
         notifyDataSetChanged();
     }
@@ -58,11 +57,11 @@ public class GalleryPagerAdapter extends PagerAdapter {
         PhotoView imageView = (PhotoView) layout.findViewById(R.id.gallery_pager_image);
         final ProgressWheel progress = (ProgressWheel) layout.findViewById(R.id.gallery_pager_progress);
 
+        Picture picture = mData.get(position);
         progress.setVisibility(View.VISIBLE);
         Glide.with(mContext)
-             .load(mData.get(position))
-             .centerCrop()
-             .placeholder(new ColorDrawable(Color.GRAY))
+             .load(picture.getUrl())
+             .fitCenter()
              .crossFade()
              .diskCacheStrategy(DiskCacheStrategy.ALL)
              .listener(new RequestListener<String, GlideDrawable>() {

@@ -1,7 +1,6 @@
 package site.hanschen.pretty.db.repository;
 
 import android.support.annotation.Nullable;
-import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,6 +13,7 @@ import site.hanschen.pretty.db.gen.QuestionDao;
 /**
  * @author HansChen
  */
+
 public class PrettyRepositoryImpl implements PrettyRepository {
 
     private PictureDao  mPictureDao;
@@ -25,8 +25,19 @@ public class PrettyRepositoryImpl implements PrettyRepository {
     }
 
     @Override
-    public long insertOrReplace(Question question) {
-        return mQuestionDao.insertOrReplace(question);
+    public long insertOrUpdate(Question question) {
+        Question old = getQuestion(question.getQuestionId());
+        if (old == null) {
+            return mQuestionDao.insert(question);
+        } else {
+            if (!old.equals(question)) {
+                old.setQuestionId(question.getQuestionId());
+                old.setTitle(question.getTitle());
+                old.setAnswerCount(question.getAnswerCount());
+                mQuestionDao.update(old);
+            }
+            return old.getId();
+        }
     }
 
     @Override
@@ -49,8 +60,18 @@ public class PrettyRepositoryImpl implements PrettyRepository {
     }
 
     @Override
-    public long insertOrReplace(Picture picture) {
-        return mPictureDao.insertOrReplace(picture);
+    public long insertOrUpdate(Picture picture) {
+        Picture old = getPicture(picture.getUrl(), picture.getQuestionId());
+        if (old == null) {
+            return mPictureDao.insert(picture);
+        } else {
+            if (!old.equals(picture)) {
+                old.setQuestionId(picture.getQuestionId());
+                old.setUrl(picture.getUrl());
+                mPictureDao.update(old);
+            }
+            return old.getId();
+        }
     }
 
     @Override
@@ -61,8 +82,11 @@ public class PrettyRepositoryImpl implements PrettyRepository {
 
     @Override
     @Nullable
-    public Picture getPicture(String url) {
-        return mPictureDao.queryBuilder().where(PictureDao.Properties.Url.eq(url)).build().unique();
+    public Picture getPicture(String url, int questionId) {
+        return mPictureDao.queryBuilder()
+                          .where(PictureDao.Properties.Url.eq(url), PictureDao.Properties.QuestionId.eq(questionId))
+                          .build()
+                          .unique();
     }
 
     @Override
@@ -72,8 +96,8 @@ public class PrettyRepositoryImpl implements PrettyRepository {
     }
 
     @Override
-    public void deletePicture(String url) {
-        Picture picture = getPicture(url);
+    public void deletePicture(String url, int questionId) {
+        Picture picture = getPicture(url, questionId);
         mPictureDao.delete(picture);
     }
 }

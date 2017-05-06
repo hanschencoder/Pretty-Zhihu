@@ -44,7 +44,7 @@ public class ZhiHuApiApiImpl implements ZhiHuApi {
             return matcher.group(1);
         }
 
-        return "unknown";
+        return null;
     }
 
     @Override

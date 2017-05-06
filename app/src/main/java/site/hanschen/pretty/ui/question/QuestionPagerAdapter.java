@@ -1,4 +1,4 @@
-package site.hanschen.pretty.ui.home;
+package site.hanschen.pretty.ui.question;
 
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
