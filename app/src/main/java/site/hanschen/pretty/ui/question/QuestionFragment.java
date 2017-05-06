@@ -266,9 +266,10 @@ public class QuestionFragment extends Fragment implements FragmentBackHandler {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onMessageEvent(NewPictureEvent event) {
-        mAdapter.notifyDataSetChanged();
+        if (event.pictures.size() > 0) {
+            mAdapter.notifyDataSetChanged();
+        }
     }
-
 
     private void showNewQuestionDialog() {
         new MaterialDialog.Builder(getActivity()).title("添加话题")

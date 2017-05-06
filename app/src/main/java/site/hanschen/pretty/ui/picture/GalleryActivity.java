@@ -155,8 +155,8 @@ public class GalleryActivity extends AppCompatActivity {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onMessageEvent(NewPictureEvent event) {
-//        mPictures.add(event.picture);
-//        mPagerAdapter.notifyDataSetChanged();
-//        updateIndicate();
+        mPictures.addAll(event.pictures);
+        mPagerAdapter.notifyDataSetChanged();
+        updateIndicate();
     }
 }

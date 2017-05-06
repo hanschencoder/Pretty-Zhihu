@@ -1,5 +1,7 @@
 package site.hanschen.pretty.zhihu;
 
+import android.util.Log;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -74,17 +76,21 @@ public class ZhiHuApiApiImpl implements ZhiHuApi {
 
     @Override
     public String getHtml(int questionId) throws IOException {
+        Log.d("Hans", "getHtml: " + "https://www.zhihu.com/question/" + questionId);
         return httpClient.httpGet("https://www.zhihu.com/question/" + questionId);
     }
 
     @Override
     public AnswerList getAnswerList(int questionId, int pageSize, int offset) throws IOException {
         RequestAnswerParams params = new RequestAnswerParams(questionId, pageSize, offset);
+        Log.d("Hans", "getAnswerList: " + JsonUtils.toJson(params));
         FormBody body = new FormBody.Builder().add("method", "next").add("params", JsonUtils.toJson(params)).build();
         Map<String, String> header = new HashMap<>();
         header.put("Content-Type", "application/x-www-form-urlencoded");
 
         String answer = httpClient.httpPost("https://www.zhihu.com/node/QuestionAnswerListV2", header, body);
-        return JsonUtils.fromJsonObject(answer, AnswerList.class);
+        AnswerList answerList = JsonUtils.fromJsonObject(answer, AnswerList.class);
+        Log.d("Hans", "answerList: " + answerList.msg.size());
+        return answerList;
     }
 }

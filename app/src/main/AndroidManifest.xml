@@ -41,6 +41,8 @@
             android:name=".ui.picture.PictureListActivity"
             android:screenOrientation="portrait"/>
 
+        <service android:name=".service.PrettyService"/>
+
     </application>
 
 </manifest>

@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Rect;
 import android.os.Bundle;
+import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -16,6 +17,8 @@ import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 
 import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.List;
 
@@ -24,21 +27,18 @@ import butterknife.ButterKnife;
 import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
 import io.reactivex.ObservableOnSubscribe;
-import io.reactivex.ObservableSource;
 import io.reactivex.Observer;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
-import io.reactivex.functions.Function;
 import io.reactivex.schedulers.Schedulers;
 import site.hanschen.pretty.R;
 import site.hanschen.pretty.application.PrettyApplication;
 import site.hanschen.pretty.base.BaseActivity;
 import site.hanschen.pretty.db.bean.Picture;
-import site.hanschen.pretty.db.bean.Question;
 import site.hanschen.pretty.db.repository.PrettyRepository;
 import site.hanschen.pretty.eventbus.NewPictureEvent;
+import site.hanschen.pretty.service.PrettyManager;
 import site.hanschen.pretty.zhihu.ZhiHuApi;
-import site.hanschen.pretty.zhihu.bean.AnswerList;
 
 /**
  * @author HansChen
@@ -65,6 +65,7 @@ public class PictureListActivity extends BaseActivity {
     private List<Picture>    mPictures;
     private PrettyRepository mPrettyRepository;
     private ZhiHuApi         mApi;
+    private PrettyManager    mPrettyManager;
     private int              mQuestionId;
     private String           mTitle;
 
@@ -73,11 +74,19 @@ public class PictureListActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_picture_list);
         ButterKnife.bind(PictureListActivity.this);
+        EventBus.getDefault().register(this);
         mPrettyRepository = PrettyApplication.getInstance().getPrettyRepository();
         mApi = PrettyApplication.getInstance().getApi();
+        mPrettyManager = PrettyApplication.getInstance().getPrettyManager();
         parseData();
         initViews();
         initData();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        EventBus.getDefault().unregister(this);
     }
 
     @Override
@@ -182,7 +191,7 @@ public class PictureListActivity extends BaseActivity {
                                         .onPositive(new MaterialDialog.SingleButtonCallback() {
                                             @Override
                                             public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
-                                                fetchPictureList();
+                                                mPrettyManager.startFetchPicture(mQuestionId);
                                             }
                                         })
                                         .negativeText("取消")
@@ -190,80 +199,17 @@ public class PictureListActivity extends BaseActivity {
                                         .show();
     }
 
-    private void fetchPictureList() {
-        Observable.create(new ObservableOnSubscribe<Integer>() {
-            @Override
-            public void subscribe(@NonNull ObservableEmitter<Integer> emitter) throws Exception {
-                Question question = mPrettyRepository.getQuestion(mQuestionId);
-                if (question != null) {
-                    for (int offset = 0; offset < question.getAnswerCount(); offset += 10) {
-                        emitter.onNext(offset);
-                    }
-                }
-                emitter.onComplete();
-            }
-        }).subscribeOn(Schedulers.io()).observeOn(Schedulers.io()).map(new Function<Integer, AnswerList>() {
-            @Override
-            public AnswerList apply(@NonNull Integer offset) throws Exception {
-                return mApi.getAnswerList(mQuestionId, 10, offset);
-            }
-        }).observeOn(Schedulers.computation()).flatMap(new Function<AnswerList, ObservableSource<String>>() {
-            @Override
-            public ObservableSource<String> apply(@NonNull final AnswerList answerList) throws Exception {
-                return Observable.create(new ObservableOnSubscribe<String>() {
-                    @Override
-                    public void subscribe(@NonNull ObservableEmitter<String> emitter) throws Exception {
-                        for (String answer : answerList.msg) {
-                            emitter.onNext(answer);
-                        }
-                        emitter.onComplete();
-                    }
-                });
-            }
-        }).map(new Function<String, List<String>>() {
-            @Override
-            public List<String> apply(@NonNull String answer) throws Exception {
-                return mApi.parsePictureList(answer);
-            }
-        }).flatMap(new Function<List<String>, ObservableSource<Picture>>() {
-            @Override
-            public ObservableSource<Picture> apply(final @NonNull List<String> urls) throws Exception {
-                return Observable.create(new ObservableOnSubscribe<Picture>() {
-                    @Override
-                    public void subscribe(@NonNull ObservableEmitter<Picture> emitter) throws Exception {
-                        for (String url : urls) {
-                            if (mPrettyRepository.getPicture(url, mQuestionId) == null) {
-                                Picture picture = new Picture(null, mQuestionId, url);
-                                mPrettyRepository.insertOrUpdate(picture);
-                                emitter.onNext(picture);
-                            }
-                        }
-                        emitter.onComplete();
-                    }
-                });
-            }
-        }).observeOn(AndroidSchedulers.mainThread()).subscribe(new Observer<Picture>() {
-            @Override
-            public void onSubscribe(@NonNull Disposable disposable) {
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onMessageEvent(NewPictureEvent event) {
+        if (event.pictures.size() > 0) {
+            mPictures.addAll(event.pictures);
+            mAdapter.notifyDataSetChanged();
+        }
+    }
 
-            }
-
-            @Override
-            public void onNext(@NonNull Picture picture) {
-                mPictures.add(picture);
-                mAdapter.notifyDataSetChanged();
-                EventBus.getDefault().post(new NewPictureEvent(picture));
-            }
-
-            @Override
-            public void onError(@NonNull Throwable throwable) {
-
-            }
-
-            @Override
-            public void onComplete() {
-
-            }
-        });
+    private void checkWorkerThread() {
+        if (Looper.myLooper() == Looper.getMainLooper()) {
+            throw new RuntimeException("main thread");
+        }
     }
 }

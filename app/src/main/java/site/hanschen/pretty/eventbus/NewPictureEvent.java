@@ -1,5 +1,7 @@
 package site.hanschen.pretty.eventbus;
 
+import java.util.List;
+
 import site.hanschen.pretty.db.bean.Picture;
 
 /**
@@ -7,9 +9,9 @@ import site.hanschen.pretty.db.bean.Picture;
  */
 public class NewPictureEvent {
 
-    public Picture picture;
+    public List<Picture> pictures;
 
-    public NewPictureEvent(Picture picture) {
-        this.picture = picture;
+    public NewPictureEvent(List<Picture> pictures) {
+        this.pictures = pictures;
     }
 }

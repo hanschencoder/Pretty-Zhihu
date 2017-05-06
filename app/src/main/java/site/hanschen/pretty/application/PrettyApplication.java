@@ -1,13 +1,20 @@
 package site.hanschen.pretty.application;
 
 import android.app.Application;
+import android.content.ComponentName;
 import android.content.Context;
+import android.content.ServiceConnection;
 import android.database.sqlite.SQLiteDatabase;
+import android.os.IBinder;
+
+import com.squareup.leakcanary.LeakCanary;
 
 import site.hanschen.pretty.db.gen.DaoMaster;
 import site.hanschen.pretty.db.gen.DaoSession;
 import site.hanschen.pretty.db.repository.PrettyRepository;
 import site.hanschen.pretty.db.repository.PrettyRepositoryImpl;
+import site.hanschen.pretty.service.PrettyManager;
+import site.hanschen.pretty.service.PrettyService;
 import site.hanschen.pretty.zhihu.ZhiHuApi;
 import site.hanschen.pretty.zhihu.ZhiHuApiApiImpl;
 
@@ -24,6 +31,7 @@ public class PrettyApplication extends Application {
 
     private PrettyRepository mPrettyRepository;
     private ZhiHuApi         mZhiHuApi;
+    private PrettyManager    mPrettyManager;
 
     @Override
     protected void attachBaseContext(Context base) {
@@ -34,6 +42,11 @@ public class PrettyApplication extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
+        if (LeakCanary.isInAnalyzerProcess(this)) {
+            return;
+        }
+        LeakCanary.install(this);
+        bindPrettyService();
     }
 
     public PrettyRepository getPrettyRepository() {
@@ -59,5 +72,35 @@ public class PrettyApplication extends Application {
             }
         }
         return mZhiHuApi;
+    }
+
+    private final ServiceConnection mConn = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            if (service instanceof PrettyService.PrettyBinder) {
+                mPrettyManager = ((PrettyService.PrettyBinder) service).getPrettyManager();
+            }
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            mPrettyManager = null;
+        }
+    };
+
+    private void bindPrettyService() {
+        PrettyService.bind(getApplicationContext(), mConn);
+    }
+
+    private void unbindPrettyService() {
+        PrettyService.unbind(getApplicationContext(), mConn);
+        mPrettyManager = null;
+    }
+
+    public PrettyManager getPrettyManager() {
+        if (mPrettyManager == null) {
+            throw new IllegalStateException("mPrettyManager is null now ");
+        }
+        return mPrettyManager;
     }
 }
