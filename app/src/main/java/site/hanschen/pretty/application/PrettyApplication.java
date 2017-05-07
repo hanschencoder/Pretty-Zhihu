@@ -13,8 +13,8 @@ import site.hanschen.pretty.db.gen.DaoMaster;
 import site.hanschen.pretty.db.gen.DaoSession;
 import site.hanschen.pretty.db.repository.PrettyRepository;
 import site.hanschen.pretty.db.repository.PrettyRepositoryImpl;
-import site.hanschen.pretty.service.PrettyManager;
-import site.hanschen.pretty.service.PrettyService;
+import site.hanschen.pretty.service.TaskManager;
+import site.hanschen.pretty.service.TaskService;
 import site.hanschen.pretty.zhihu.ZhiHuApi;
 import site.hanschen.pretty.zhihu.ZhiHuApiApiImpl;
 
@@ -31,7 +31,7 @@ public class PrettyApplication extends Application {
 
     private PrettyRepository mPrettyRepository;
     private ZhiHuApi         mZhiHuApi;
-    private PrettyManager    mPrettyManager;
+    private TaskManager      mTaskManager;
 
     @Override
     protected void attachBaseContext(Context base) {
@@ -46,7 +46,7 @@ public class PrettyApplication extends Application {
             return;
         }
         LeakCanary.install(this);
-        bindPrettyService();
+        bindTaskService();
     }
 
     public PrettyRepository getPrettyRepository() {
@@ -77,30 +77,30 @@ public class PrettyApplication extends Application {
     private final ServiceConnection mConn = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
-            if (service instanceof PrettyService.PrettyBinder) {
-                mPrettyManager = ((PrettyService.PrettyBinder) service).getPrettyManager();
+            if (service instanceof TaskService.TaskBinder) {
+                mTaskManager = ((TaskService.TaskBinder) service).getPrettyManager();
             }
         }
 
         @Override
         public void onServiceDisconnected(ComponentName name) {
-            mPrettyManager = null;
+            mTaskManager = null;
         }
     };
 
-    private void bindPrettyService() {
-        PrettyService.bind(getApplicationContext(), mConn);
+    private void bindTaskService() {
+        TaskService.bind(getApplicationContext(), mConn);
     }
 
-    private void unbindPrettyService() {
-        PrettyService.unbind(getApplicationContext(), mConn);
-        mPrettyManager = null;
+    private void unbindTaskService() {
+        TaskService.unbind(getApplicationContext(), mConn);
+        mTaskManager = null;
     }
 
-    public PrettyManager getPrettyManager() {
-        if (mPrettyManager == null) {
-            throw new IllegalStateException("mPrettyManager is null now ");
+    public TaskManager getTaskManager() {
+        if (mTaskManager == null) {
+            throw new IllegalStateException("mTaskManager is null now ");
         }
-        return mPrettyManager;
+        return mTaskManager;
     }
 }

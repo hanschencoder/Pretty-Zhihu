@@ -80,11 +80,10 @@ public class GalleryActivity extends AppCompatActivity {
 
     private void parseData() {
         Bundle bundle = getIntent().getExtras();
-        if (bundle == null
-            || (mQuestionId = bundle.getInt(KEY_QUESTION_ID)) == 0
-            || (mSelected = bundle.getInt(KEY_SELECT)) == 0) {
+        if (bundle == null || (mQuestionId = bundle.getInt(KEY_QUESTION_ID)) == 0) {
             throw new IllegalArgumentException("bundle must contain QuestionId");
         }
+        mSelected = bundle.getInt(KEY_SELECT);
     }
 
 
@@ -155,6 +154,9 @@ public class GalleryActivity extends AppCompatActivity {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onMessageEvent(NewPictureEvent event) {
+        if (event.questionId != mQuestionId || event.pictures.size() <= 0) {
+            return;
+        }
         mPictures.addAll(event.pictures);
         mPagerAdapter.notifyDataSetChanged();
         updateIndicate();

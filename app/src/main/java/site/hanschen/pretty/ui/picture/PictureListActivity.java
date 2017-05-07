@@ -4,7 +4,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Rect;
 import android.os.Bundle;
-import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -37,7 +36,7 @@ import site.hanschen.pretty.base.BaseActivity;
 import site.hanschen.pretty.db.bean.Picture;
 import site.hanschen.pretty.db.repository.PrettyRepository;
 import site.hanschen.pretty.eventbus.NewPictureEvent;
-import site.hanschen.pretty.service.PrettyManager;
+import site.hanschen.pretty.service.TaskManager;
 import site.hanschen.pretty.zhihu.ZhiHuApi;
 
 /**
@@ -65,7 +64,7 @@ public class PictureListActivity extends BaseActivity {
     private List<Picture>    mPictures;
     private PrettyRepository mPrettyRepository;
     private ZhiHuApi         mApi;
-    private PrettyManager    mPrettyManager;
+    private TaskManager      mTaskManager;
     private int              mQuestionId;
     private String           mTitle;
 
@@ -77,7 +76,7 @@ public class PictureListActivity extends BaseActivity {
         EventBus.getDefault().register(this);
         mPrettyRepository = PrettyApplication.getInstance().getPrettyRepository();
         mApi = PrettyApplication.getInstance().getApi();
-        mPrettyManager = PrettyApplication.getInstance().getPrettyManager();
+        mTaskManager = PrettyApplication.getInstance().getTaskManager();
         parseData();
         initViews();
         initData();
@@ -191,7 +190,7 @@ public class PictureListActivity extends BaseActivity {
                                         .onPositive(new MaterialDialog.SingleButtonCallback() {
                                             @Override
                                             public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
-                                                mPrettyManager.startFetchPicture(mQuestionId);
+                                                mTaskManager.startFetchPicture(mQuestionId);
                                             }
                                         })
                                         .negativeText("取消")
@@ -201,15 +200,10 @@ public class PictureListActivity extends BaseActivity {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onMessageEvent(NewPictureEvent event) {
-        if (event.pictures.size() > 0) {
-            mPictures.addAll(event.pictures);
-            mAdapter.notifyDataSetChanged();
+        if (event.questionId != mQuestionId || event.pictures.size() <= 0) {
+            return;
         }
-    }
-
-    private void checkWorkerThread() {
-        if (Looper.myLooper() == Looper.getMainLooper()) {
-            throw new RuntimeException("main thread");
-        }
+        mPictures.addAll(event.pictures);
+        mAdapter.notifyDataSetChanged();
     }
 }

@@ -9,9 +9,11 @@ import site.hanschen.pretty.db.bean.Picture;
  */
 public class NewPictureEvent {
 
+    public int           questionId;
     public List<Picture> pictures;
 
-    public NewPictureEvent(List<Picture> pictures) {
+    public NewPictureEvent(int questionId, List<Picture> pictures) {
+        this.questionId = questionId;
         this.pictures = pictures;
     }
 }

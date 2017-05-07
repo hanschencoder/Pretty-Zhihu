@@ -266,8 +266,10 @@ public class QuestionFragment extends Fragment implements FragmentBackHandler {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onMessageEvent(NewPictureEvent event) {
-        if (event.pictures.size() > 0) {
-            mAdapter.notifyDataSetChanged();
+        if (mCategory == QuestionCategory.HISTORY) {
+            if (event.pictures.size() > 0) {
+                mAdapter.notifyDataSetChanged();
+            }
         }
     }
 
@@ -275,7 +277,7 @@ public class QuestionFragment extends Fragment implements FragmentBackHandler {
         new MaterialDialog.Builder(getActivity()).title("添加话题")
                                                  .content("请输入话题地址")
                                                  .input("地址",
-                                                        "https://www.zhihu.com/question/",
+                                                        "https://www.zhihu.com/question/37787176",
                                                         false,
                                                         new MaterialDialog.InputCallback() {
                                                             @Override
