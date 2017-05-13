@@ -1,5 +1,7 @@
 package site.hanschen.pretty.service;
 
+import android.util.Log;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -38,6 +40,7 @@ public class UrlHunter implements Runnable {
     }
 
     public boolean cancel() {
+        Log.d("Hans", "cancel: " + mOffset);
         return mFuture != null && mFuture.cancel(false);
     }
 

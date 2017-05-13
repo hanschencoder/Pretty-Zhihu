@@ -85,6 +85,11 @@ public class TaskService extends Service implements TaskManager {
         mDispatcher.dispatchAddTask(questionId);
     }
 
+    @Override
+    public void stopFetchPicture(int questionId) {
+        mDispatcher.dispatchRemoveTask(questionId);
+    }
+
     private Handler.Callback mMainCallback = new Handler.Callback() {
         @Override
         public boolean handleMessage(Message msg) {

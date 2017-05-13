@@ -106,6 +106,7 @@ public class GalleryActivity extends AppCompatActivity {
             @Override
             public void onPageSelected(int position) {
                 mSelected = position;
+                updateIndicate();
             }
 
             @Override
@@ -157,7 +158,6 @@ public class GalleryActivity extends AppCompatActivity {
         if (event.questionId != mQuestionId || event.pictures.size() <= 0) {
             return;
         }
-        mPictures.addAll(event.pictures);
         mPagerAdapter.notifyDataSetChanged();
         updateIndicate();
     }

@@ -4,9 +4,10 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Message;
 import android.support.annotation.WorkerThread;
-import android.util.Log;
 import android.util.SparseArray;
 
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ThreadPoolExecutor;
 
@@ -32,7 +33,7 @@ public class Dispatcher {
     private ZhiHuApi           mApi;
     private ThreadPoolExecutor mExecutor;
 
-    private SparseArray<UrlHunter>    mTaskArray;
+    private List<UrlHunter>           mTaskArray;
     private SparseArray<List<String>> mBatch;
 
     public Dispatcher(PrettyRepository repository, ZhiHuApi api, ThreadPoolExecutor executor, Handler mainHandler) {
@@ -44,7 +45,7 @@ public class Dispatcher {
         mWorkerThread = new HandlerThread("worker thread");
         mWorkerThread.start();
         mWorkerHandler = new Handler(mWorkerThread.getLooper(), mWorkerCallback);
-        mTaskArray = new SparseArray<>();
+        mTaskArray = new ArrayList<>();
         mBatch = new SparseArray<>();
     }
 
@@ -84,7 +85,7 @@ public class Dispatcher {
         if (question != null) {
             for (int offset = 0; offset < question.getAnswerCount(); offset += 10) {
                 UrlHunter hunter = new UrlHunter(questionId, 10, offset, mApi, this);
-                mTaskArray.put(questionId, hunter);
+                mTaskArray.add(hunter);
                 hunter.setFuture(mExecutor.submit(hunter));
             }
         }
@@ -92,17 +93,18 @@ public class Dispatcher {
 
     @WorkerThread
     private void performRemoveTask(int questionId) {
-        UrlHunter hunter = mTaskArray.get(questionId);
-        if (hunter != null) {
-            if (hunter.cancel()) {
-                mTaskArray.remove(questionId);
+        Iterator<UrlHunter> iterator = mTaskArray.iterator();
+        while (iterator.hasNext()) {
+            UrlHunter h = iterator.next();
+            if (h.getQuestionId() == questionId && h.cancel()) {
+                iterator.remove();
             }
         }
     }
 
     @WorkerThread
     private void performHuntComplete(UrlHunter hunter) {
-        mTaskArray.remove(hunter.getQuestionId());
+        mTaskArray.remove(hunter);
         batch(hunter);
     }
 
@@ -124,7 +126,7 @@ public class Dispatcher {
 
     @WorkerThread
     private void performHuntFailed(UrlHunter hunter) {
-        mTaskArray.remove(hunter.getQuestionId());
+        mTaskArray.remove(hunter);
     }
 
     @WorkerThread

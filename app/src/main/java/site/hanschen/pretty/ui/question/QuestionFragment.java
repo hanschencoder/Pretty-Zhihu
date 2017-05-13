@@ -268,6 +268,12 @@ public class QuestionFragment extends Fragment implements FragmentBackHandler {
     public void onMessageEvent(NewPictureEvent event) {
         if (mCategory == QuestionCategory.HISTORY) {
             if (event.pictures.size() > 0) {
+                for (Question q : mQuestion) {
+                    if (q.getQuestionId() == event.questionId) {
+                        q.getPictures().addAll(event.pictures);
+                        break;
+                    }
+                }
                 mAdapter.notifyDataSetChanged();
             }
         }
@@ -358,6 +364,7 @@ public class QuestionFragment extends Fragment implements FragmentBackHandler {
                           dismissDialog();
                           mQuestion.add(question);
                           mAdapter.notifyDataSetChanged();
+                          mRecyclerView.smoothScrollToPosition(mAdapter.getItemCount() - 1);
                           Toast.makeText(getActivity().getApplicationContext(), "话题已添加", Toast.LENGTH_SHORT).show();
                       }
 

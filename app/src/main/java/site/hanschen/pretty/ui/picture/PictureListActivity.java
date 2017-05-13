@@ -5,12 +5,13 @@ import android.content.Intent;
 import android.graphics.Rect;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
+import android.widget.ProgressBar;
+import android.widget.Toast;
 
 import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
@@ -23,6 +24,7 @@ import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
 import io.reactivex.ObservableOnSubscribe;
@@ -37,7 +39,6 @@ import site.hanschen.pretty.db.bean.Picture;
 import site.hanschen.pretty.db.repository.PrettyRepository;
 import site.hanschen.pretty.eventbus.NewPictureEvent;
 import site.hanschen.pretty.service.TaskManager;
-import site.hanschen.pretty.zhihu.ZhiHuApi;
 
 /**
  * @author HansChen
@@ -60,13 +61,19 @@ public class PictureListActivity extends BaseActivity {
     @BindView(R.id.picture_list_pictures)
     RecyclerView mPictureView;
 
+    @BindView(R.id.picture_list_refresh)
+    FloatingActionButton mFabBtn;
+
+    @BindView(R.id.picture_list_progress)
+    ProgressBar mProgressBar;
+
     private PictureAdapter   mAdapter;
     private List<Picture>    mPictures;
     private PrettyRepository mPrettyRepository;
-    private ZhiHuApi         mApi;
     private TaskManager      mTaskManager;
     private int              mQuestionId;
     private String           mTitle;
+    private boolean mFetching = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,7 +82,6 @@ public class PictureListActivity extends BaseActivity {
         ButterKnife.bind(PictureListActivity.this);
         EventBus.getDefault().register(this);
         mPrettyRepository = PrettyApplication.getInstance().getPrettyRepository();
-        mApi = PrettyApplication.getInstance().getApi();
         mTaskManager = PrettyApplication.getInstance().getTaskManager();
         parseData();
         initViews();
@@ -86,22 +92,6 @@ public class PictureListActivity extends BaseActivity {
     protected void onDestroy() {
         super.onDestroy();
         EventBus.getDefault().unregister(this);
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_picture_list, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.refresh:
-                showFetchDialog();
-                break;
-        }
-        return true;
     }
 
     private void parseData() {
@@ -184,13 +174,15 @@ public class PictureListActivity extends BaseActivity {
     }
 
     private void showFetchDialog() {
-        new MaterialDialog.Builder(this).title("打开话题")
+        new MaterialDialog.Builder(this).title("抓取图片")
                                         .content("抓取该话题下所有图片？请尽量使用Wi-Fi，土豪随意")
                                         .positiveText("抓取")
                                         .onPositive(new MaterialDialog.SingleButtonCallback() {
                                             @Override
                                             public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
                                                 mTaskManager.startFetchPicture(mQuestionId);
+                                                displayStartFetching();
+                                                mFetching = true;
                                             }
                                         })
                                         .negativeText("取消")
@@ -203,7 +195,28 @@ public class PictureListActivity extends BaseActivity {
         if (event.questionId != mQuestionId || event.pictures.size() <= 0) {
             return;
         }
-        mPictures.addAll(event.pictures);
         mAdapter.notifyDataSetChanged();
+    }
+
+    @OnClick(R.id.picture_list_refresh)
+    void onFabClick() {
+        if (mFetching) {
+            mTaskManager.stopFetchPicture(mQuestionId);
+            displayStopFetching();
+            mFetching = false;
+        } else {
+            showFetchDialog();
+        }
+    }
+
+    private void displayStartFetching() {
+        mProgressBar.setVisibility(View.VISIBLE);
+        mFabBtn.setImageResource(R.drawable.ic_close_black_24dp);
+    }
+
+    private void displayStopFetching() {
+        mProgressBar.setVisibility(View.GONE);
+        mFabBtn.setImageResource(R.drawable.ic_refresh_black_24dp);
+        Toast.makeText(getApplicationContext(), "已停止抓取图片", Toast.LENGTH_SHORT).show();
     }
 }
