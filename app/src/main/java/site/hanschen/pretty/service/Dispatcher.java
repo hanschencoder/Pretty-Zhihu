@@ -33,8 +33,8 @@ public class Dispatcher {
     private ZhiHuApi           mApi;
     private ThreadPoolExecutor mExecutor;
 
-    private List<UrlHunter>           mTaskArray;
-    private SparseArray<List<String>> mBatch;
+    private volatile List<UrlHunter>           mTaskArray;
+    private          SparseArray<List<String>> mBatch;
 
     public Dispatcher(PrettyRepository repository, ZhiHuApi api, ThreadPoolExecutor executor, Handler mainHandler) {
         this.mPrettyRepository = repository;
@@ -53,6 +53,15 @@ public class Dispatcher {
         mWorkerHandler.removeCallbacksAndMessages(null);
         mWorkerThread.quit();
         mTaskArray.clear();
+    }
+
+    public boolean isFetching(int questionId) {
+        for (UrlHunter h : mTaskArray) {
+            if (h.getQuestionId() == questionId) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public void dispatchAddTask(int questionId) {

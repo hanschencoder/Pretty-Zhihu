@@ -12,11 +12,57 @@ android {
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
+
+    signingConfigs {
+        release {
+            storeFile file('../keystore/release.keystore')
+            storePassword getProperty('store.password', 'STORE_PASSWORD')
+            keyAlias getProperty('store.key.alias', 'KEY_ALIAS')
+            keyPassword getProperty('store.key.password', 'KEY_PASSWORD')
+        }
+    }
+
     buildTypes {
         release {
-            minifyEnabled false
+            signingConfig signingConfigs.release
+            minifyEnabled true
+            //Zipalign优化
+            zipAlignEnabled true
+            // 移除无用的resource文件
+            shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
+    }
+
+    applicationVariants.all { variant ->
+        variant.outputs.each { output ->
+            def oldFile = output.outputFile
+            def releaseApkName = String.format('%s_%s_%s_%s.apk', 'Pretty', getVersionName(), getDate(), variant.buildType.name);
+            output.outputFile = new File(oldFile.parent, releaseApkName)
+        }
+    }
+}
+
+def getDate() {
+    return new Date().format('yyyyMMdd', TimeZone.getTimeZone('GMT+8'))
+}
+
+def getVersionName() {
+    return 'v' + android.defaultConfig.versionName
+}
+
+def getProperty(String propertyName, String envName) {
+    try {
+        def property = project.hasProperty(propertyName) ? project.property(propertyName) : System.getenv(envName)
+        if (property == null) {
+            throw new NullPointerException();
+        }
+        return property
+    } catch (Throwable ignored) {
+        def message = String.format('********************************************************************************\n' +
+                'You need define %s in gradle.properties or set environment variable: %s\n' +
+                '********************************************************************************\n', propertyName, envName)
+        throw new RuntimeException(message)
     }
 }
 

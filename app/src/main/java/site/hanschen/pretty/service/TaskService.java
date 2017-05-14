@@ -81,6 +81,11 @@ public class TaskService extends Service implements TaskManager {
     }
 
     @Override
+    public boolean isFetching(final int questionId) {
+        return mDispatcher.isFetching(questionId);
+    }
+
+    @Override
     public void startFetchPicture(final int questionId) {
         mDispatcher.dispatchAddTask(questionId);
     }

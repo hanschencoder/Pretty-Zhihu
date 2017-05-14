@@ -73,7 +73,6 @@ public class PictureListActivity extends BaseActivity {
     private TaskManager      mTaskManager;
     private int              mQuestionId;
     private String           mTitle;
-    private boolean mFetching = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -130,6 +129,12 @@ public class PictureListActivity extends BaseActivity {
         mAdapter = new PictureAdapter(this, getPhotoSize(3));
         mAdapter.setItemClickListener(mOnItemClickListener);
         mPictureView.setAdapter(mAdapter);
+
+        if (mTaskManager.isFetching(mQuestionId)) {
+            displayFetchingState();
+        } else {
+            displayNoFetchingState();
+        }
     }
 
     private PictureAdapter.OnItemClickListener mOnItemClickListener = new PictureAdapter.OnItemClickListener() {
@@ -181,8 +186,7 @@ public class PictureListActivity extends BaseActivity {
                                             @Override
                                             public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
                                                 mTaskManager.startFetchPicture(mQuestionId);
-                                                displayStartFetching();
-                                                mFetching = true;
+                                                displayFetchingState();
                                             }
                                         })
                                         .negativeText("取消")
@@ -200,23 +204,22 @@ public class PictureListActivity extends BaseActivity {
 
     @OnClick(R.id.picture_list_refresh)
     void onFabClick() {
-        if (mFetching) {
+        if (mTaskManager.isFetching(mQuestionId)) {
             mTaskManager.stopFetchPicture(mQuestionId);
-            displayStopFetching();
-            mFetching = false;
+            displayNoFetchingState();
+            Toast.makeText(getApplicationContext(), "已停止抓取图片", Toast.LENGTH_SHORT).show();
         } else {
             showFetchDialog();
         }
     }
 
-    private void displayStartFetching() {
+    private void displayFetchingState() {
         mProgressBar.setVisibility(View.VISIBLE);
         mFabBtn.setImageResource(R.drawable.ic_close_black_24dp);
     }
 
-    private void displayStopFetching() {
+    private void displayNoFetchingState() {
         mProgressBar.setVisibility(View.GONE);
         mFabBtn.setImageResource(R.drawable.ic_refresh_black_24dp);
-        Toast.makeText(getApplicationContext(), "已停止抓取图片", Toast.LENGTH_SHORT).show();
     }
 }

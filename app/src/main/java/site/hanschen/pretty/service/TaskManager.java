@@ -5,6 +5,8 @@ package site.hanschen.pretty.service;
  */
 public interface TaskManager {
 
+    boolean isFetching(final int questionId);
+
     void startFetchPicture(final int questionId);
 
     void stopFetchPicture(final int questionId);
