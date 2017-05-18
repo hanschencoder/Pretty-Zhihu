@@ -1,11 +1,14 @@
 package site.hanschen.pretty.ui.question;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.TabLayout;
 import android.support.v4.view.ViewPager;
 import android.support.v7.widget.Toolbar;
+import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 
 import org.greenrobot.eventbus.EventBus;
@@ -21,6 +24,8 @@ import site.hanschen.pretty.R;
 import site.hanschen.pretty.base.BaseActivity;
 import site.hanschen.pretty.eventbus.EditModeChangedEvent;
 import site.hanschen.pretty.eventbus.NewQuestionEvent;
+import site.hanschen.pretty.eventbus.ShareFromZhihuEvent;
+import site.hanschen.pretty.utils.CommonUtils;
 import site.hanschen.pretty.widget.BackHandlerHelper;
 import site.hanschen.pretty.widget.ScrollViewPager;
 
@@ -43,6 +48,27 @@ public class QuestionActivity extends BaseActivity {
         ButterKnife.bind(this);
         EventBus.getDefault().register(this);
         initViews();
+        getExtras(getIntent());
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        getExtras(intent);
+    }
+
+    private void getExtras(Intent intent) {
+        Bundle extras = intent.getExtras();
+        if (extras != null) {
+            String shareText = extras.getString(Intent.EXTRA_TEXT);
+            String title = CommonUtils.getTitleFromShare(shareText);
+            String url = CommonUtils.getUrlFromShare(shareText);
+            if (TextUtils.isEmpty(title) || TextUtils.isEmpty(url)) {
+                return;
+            }
+
+            EventBus.getDefault().postSticky(new ShareFromZhihuEvent(title, url));
+        }
     }
 
     private void initViews() {

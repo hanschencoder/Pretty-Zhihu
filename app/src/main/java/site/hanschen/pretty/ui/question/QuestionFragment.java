@@ -47,6 +47,7 @@ import site.hanschen.pretty.db.repository.PrettyRepository;
 import site.hanschen.pretty.eventbus.EditModeChangedEvent;
 import site.hanschen.pretty.eventbus.NewPictureEvent;
 import site.hanschen.pretty.eventbus.NewQuestionEvent;
+import site.hanschen.pretty.eventbus.ShareFromZhihuEvent;
 import site.hanschen.pretty.ui.picture.PictureListActivity;
 import site.hanschen.pretty.widget.FragmentBackHandler;
 import site.hanschen.pretty.zhihu.ZhiHuApi;
@@ -277,6 +278,38 @@ public class QuestionFragment extends Fragment implements FragmentBackHandler {
                 mAdapter.notifyDataSetChanged();
             }
         }
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN, sticky = true)
+    public void onMessageEvent(ShareFromZhihuEvent event) {
+        if (mCategory == QuestionCategory.HISTORY) {
+            addNewQuestionDialog(event.title, event.url);
+        }
+    }
+
+    private void addNewQuestionDialog(final String title, final String url) {
+        new MaterialDialog.Builder(getActivity()).title("添加话题")
+                                                 .content("添加话题: " + title)
+                                                 .negativeText("取消")
+                                                 .onNegative(new MaterialDialog.SingleButtonCallback() {
+                                                     @Override
+                                                     public void onClick(@NonNull MaterialDialog dialog,
+                                                                         @NonNull DialogAction which) {
+                                                         dialog.dismiss();
+
+                                                     }
+                                                 })
+                                                 .positiveText("添加")
+                                                 .onPositive(new MaterialDialog.SingleButtonCallback() {
+                                                     @Override
+                                                     public void onClick(@NonNull MaterialDialog dialog,
+                                                                         @NonNull DialogAction which) {
+                                                         dialog.dismiss();
+                                                         fetchQuestionDetail(url);
+                                                     }
+                                                 })
+                                                 .build()
+                                                 .show();
     }
 
     private void showNewQuestionDialog() {

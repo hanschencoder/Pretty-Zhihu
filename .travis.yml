@@ -16,7 +16,7 @@ android:
     - 'google-gdk-license-.+'
 
 script:
-  - "./gradlew assembleRelease --stacktrace"
+  - "./gradlew assembleTravis --stacktrace"
 
 before_cache:
   - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock

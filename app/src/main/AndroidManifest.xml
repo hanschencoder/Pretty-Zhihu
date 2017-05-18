@@ -19,16 +19,22 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/PrettyTheme">
-        <activity android:name=".ui.question.QuestionActivity">
 
-            <meta-data
-                android:name="site.hanschen.pretty.config.PrettyGlideModule"
-                android:value="GlideModule"/>
+        <meta-data
+            android:name="site.hanschen.pretty.config.PrettyGlideModule"
+            android:value="GlideModule"/>
+
+        <activity
+            android:name=".ui.question.QuestionActivity"
+            android:launchMode="singleTop">
 
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
-
                 <category android:name="android.intent.category.LAUNCHER"/>
+
+                <action android:name="android.intent.action.SEND"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <data android:mimeType="text/plain"/>
             </intent-filter>
         </activity>
 
