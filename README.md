@@ -2,10 +2,10 @@
 
 [![Build Status](https://travis-ci.org/shensky711/Pretty-Zhihu.svg?branch=master)](https://travis-ci.org/shensky711/Pretty-Zhihu)
 
-![](https://github.com/shensky711/Pretty-Zhihu/tree/master/image/1.jpg)
-![](https://github.com/shensky711/Pretty-Zhihu/tree/master/image/2.jpg)
-![](https://github.com/shensky711/Pretty-Zhihu/tree/master/image/3.jpg)
-![](https://github.com/shensky711/Pretty-Zhihu/tree/master/image/4.jpg)
+![](https://github.com/shensky711/Pretty-Zhihu/blob/master/image/1.jpg)
+![](https://github.com/shensky711/Pretty-Zhihu/blob/master/image/2.jpg)
+![](https://github.com/shensky711/Pretty-Zhihu/blob/master/image/3.jpg)
+![](https://github.com/shensky711/Pretty-Zhihu/blob/master/image/4.jpg)
 
 知乎上的看图神器，你懂的。
 
