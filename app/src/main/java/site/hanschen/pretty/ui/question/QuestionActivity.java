@@ -8,7 +8,6 @@ import android.support.design.widget.TabLayout;
 import android.support.v4.view.ViewPager;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.View;
 
 import org.greenrobot.eventbus.EventBus;
@@ -67,7 +66,7 @@ public class QuestionActivity extends BaseActivity {
                 return;
             }
 
-            EventBus.getDefault().postSticky(new ShareFromZhihuEvent(title, url));
+            EventBus.getDefault().post(new ShareFromZhihuEvent(title, url));
         }
     }
 

@@ -129,7 +129,7 @@ public class TaskService extends Service implements TaskManager {
     }
 
     private int getThreadPoolSize() {
-        int cpu = Runtime.getRuntime().availableProcessors();
-        return 2 * cpu + 1;
+        int threadPoolSize = 2 * Runtime.getRuntime().availableProcessors() + 1;
+        return threadPoolSize > 8 ? 8 : threadPoolSize;
     }
 }

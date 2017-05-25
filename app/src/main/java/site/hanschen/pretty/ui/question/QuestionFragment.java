@@ -280,7 +280,7 @@ public class QuestionFragment extends Fragment implements FragmentBackHandler {
         }
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN, sticky = true)
+    @Subscribe(threadMode = ThreadMode.MAIN)
     public void onMessageEvent(ShareFromZhihuEvent event) {
         if (mCategory == QuestionCategory.HISTORY) {
             addNewQuestionDialog(event.title, event.url);

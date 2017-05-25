@@ -4,6 +4,7 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Message;
 import android.support.annotation.WorkerThread;
+import android.util.Log;
 import android.util.SparseArray;
 
 import java.util.ArrayList;
@@ -96,6 +97,7 @@ public class Dispatcher {
                 UrlHunter hunter = new UrlHunter(questionId, 10, offset, mApi, this);
                 mTaskArray.add(hunter);
                 hunter.setFuture(mExecutor.submit(hunter));
+                Log.d("Hans", "submit: " + hunter);
             }
         }
     }

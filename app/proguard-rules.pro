@@ -18,6 +18,7 @@
 # 不对dex进行优化和预检
 -dontoptimize
 -dontpreverify
+-dontshrink
 
 # 保留Annotation不混淆
 -keepattributes *Annotation*

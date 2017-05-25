@@ -40,7 +40,7 @@ public class UrlHunter implements Runnable {
     }
 
     public boolean cancel() {
-        Log.d("Hans", "cancel: " + mOffset);
+        Log.d("Hans", "cancel: " + toString());
         return mFuture != null && mFuture.cancel(false);
     }
 
@@ -73,5 +73,10 @@ public class UrlHunter implements Runnable {
         } catch (IOException e) {
             mDispatcher.dispatchHuntFailed(this);
         }
+    }
+
+    @Override
+    public String toString() {
+        return "UrlHunter{" + "mQuestionId=" + mQuestionId + ", mPageSize=" + mPageSize + ", mOffset=" + mOffset + '}';
     }
 }
