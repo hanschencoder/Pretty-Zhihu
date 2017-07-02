@@ -10,4 +10,8 @@ public interface TaskManager {
     void startFetchPicture(final int questionId);
 
     void stopFetchPicture(final int questionId);
+
+    void registerObserver(TaskObserver observer);
+
+    void unregisterObserver(TaskObserver observer);
 }

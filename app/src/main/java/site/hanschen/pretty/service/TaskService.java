@@ -47,11 +47,13 @@ public class TaskService extends Service implements TaskManager {
     private ThreadPoolExecutor mExecutor;
     private Dispatcher         mDispatcher;
     private Handler            mMainHandler;
+    private TaskObservable     mTaskObservable;
 
     @Override
     public void onCreate() {
         super.onCreate();
         mContext = this;
+        mTaskObservable = new TaskObservable();
         mPrettyRepository = PrettyApplication.getInstance().getPrettyRepository();
         mApi = PrettyApplication.getInstance().getApi();
         mExecutor = new ThreadPoolExecutor(getThreadPoolSize(),
@@ -95,6 +97,16 @@ public class TaskService extends Service implements TaskManager {
         mDispatcher.dispatchRemoveTask(questionId);
     }
 
+    @Override
+    public void registerObserver(TaskObserver observer) {
+        mTaskObservable.registerObserver(observer);
+    }
+
+    @Override
+    public void unregisterObserver(TaskObserver observer) {
+        mTaskObservable.unregisterObserver(observer);
+    }
+
     private Handler.Callback mMainCallback = new Handler.Callback() {
         @Override
         public boolean handleMessage(Message msg) {
@@ -113,6 +125,7 @@ public class TaskService extends Service implements TaskManager {
                         }
                         if (pictures.size() > 0) {
                             EventBus.getDefault().post(new NewPictureEvent(questionId, pictures));
+                            mTaskObservable.notifyFetch(questionId, pictures);
                         }
                     }
                     break;
