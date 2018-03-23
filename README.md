@@ -2,6 +2,9 @@
 
 [![Build Status](https://travis-ci.org/shensky711/Pretty-Zhihu.svg?branch=master)](https://travis-ci.org/shensky711/Pretty-Zhihu)
 
+## 应用安装
+[安装地址](https://github.com/shensky711/Pretty-Zhihu/blob/master/download/Pretty_v1.0.apk)
+
 ![](https://github.com/shensky711/Pretty-Zhihu/blob/master/image/1.jpg)
 ![](https://github.com/shensky711/Pretty-Zhihu/blob/master/image/2.jpg)
 ![](https://github.com/shensky711/Pretty-Zhihu/blob/master/image/3.jpg)
